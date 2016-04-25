@@ -27,11 +27,3 @@ Sample output
 29.1 52.3
 29.1 52.3
 ```
-
-## Dweet your data
-
-./dweetio
-
-Login into http://freeboard.io to access your dweet data. Create a real-time
-instrumentation panel with temperature and humidity guages without programming.
-
