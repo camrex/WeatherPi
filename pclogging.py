@@ -20,7 +20,11 @@ import sys
 import time
 import MySQLdb as mdb
 
-DATABASEPASSWORD = "rmysqlpassword"
+# Check for user imports
+try:
+   import conflocal as conf
+except ImportError:
+   import conf
 
 def log(level, source, message):
 
@@ -39,7 +43,7 @@ def log(level, source, message):
         try:
 	
                 #print("trying database")
-                con = mdb.connect('localhost', 'root', DATABASEPASSWORD, 'WeatherPi');
+                con = mdb.connect(conf.DATABASEHOST, conf.DATABASEUSER, conf.DATABASEPASSWORD, conf.DATABASENAME);
 
                 cur = con.cursor()
                 #print "before query"
