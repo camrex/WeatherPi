@@ -1,8 +1,12 @@
 #!/usr/bin/env python
 #
+# Weather Pi Solar Powered Weather Station
+# Version 2.0 April 25, 2016
+# Modified by Cameron Rex (camrex)
+#
+# Original Project:
 # WeatherPi Solar Powered Weather Station
 # Version 1.4 April 11, 2015 
-#
 # SwitchDoc Labs
 # www.switchdoc.com
 #
@@ -17,27 +21,19 @@ import random
 import re
 import math
 import os
-
 import sendemail
 import pclogging
 import MySQLdb as mdb
-
-
 from tentacle_pi.AM2315 import AM2315
 import subprocess
 import RPi.GPIO as GPIO
 import doAllGraphs
 
 sys.path.append('./RTC_SDL_DS3231')
-sys.path.append('./Adafruit_Python_BMP')
-sys.path.append('./Adafruit_Python_GPIO')
 sys.path.append('./SDL_Pi_Weather_80422')
 sys.path.append('./SDL_Pi_FRAM')
-sys.path.append('./RaspberryPi-AS3935/RPi_AS3935')
 sys.path.append('./SDL_Pi_INA3221')
 sys.path.append('./SDL_Pi_TCA9545')
-
-
 
 # Check for user imports
 try:
@@ -49,10 +45,8 @@ import SDL_Pi_INA3221
 import SDL_DS3231
 import Adafruit_BMP.BMP085 as BMP180
 import SDL_Pi_Weather_80422 as SDL_Pi_Weather_80422
-
 import SDL_Pi_FRAM
 from RPi_AS3935 import RPi_AS3935
-
 import SDL_Pi_TCA9545
 
 
@@ -243,19 +237,19 @@ tca9545.write_control_register(TCA9545_CONFIG_BUS0)
 
 def completeCommand():
 
-        f = open("/home/pi/WeatherPiSolarPoweredWeather/state/WeatherCommand.txt", "w")
+        f = open("/home/pi/WeatherPi/state/WeatherCommand.txt", "w")
         f.write("DONE")
         f.close()
 
 def completeCommandWithValue(value):
 
-        f = open("/home/pi/WeatherPiSolarPoweredWeather/state/WeatherCommand.txt", "w")
+        f = open("/home/pi/WeatherPi/state/WeatherCommand.txt", "w")
         f.write(value)
         f.close()
 
 def processCommand():
 
-        f = open("//home/pi/WeatherPiSolarPoweredWeather/state/WeatherCommand.txt", "r")
+        f = open("//home/pi/WeatherPi/state/WeatherCommand.txt", "r")
         command = f.read()
         f.close()
 
@@ -347,7 +341,7 @@ def returnPercentLeftInBattery(currentVoltage, maxVolt):
 # write SunAirPlus stats out to file
 def writeSunAirPlusStats():
 
-        f = open("/home/pi/WeatherPiSolarPoweredWeather/state/SunAirPlusStats.txt", "w")
+        f = open("/home/pi/WeatherPi/state/SunAirPlusStats.txt", "w")
 	f.write(str(batteryVoltage) + '\n')
 	f.write(str(batteryCurrent ) + '\n')
 	f.write(str(solarVoltage) + '\n')
@@ -363,7 +357,7 @@ def writeSunAirPlusStats():
 # write weather stats out to file
 def writeWeatherStats():
 
-        f = open("/home/pi/WeatherPiSolarPoweredWeather/state/WeatherStats.txt", "w")
+        f = open("/home/pi/WeatherPi/state/WeatherStats.txt", "w")
 	f.write(str(totalRain) + '\n') 
 	f.write(str(as3935LightningCount) + '\n')
 	f.write(str(as3935LastInterrupt) + '\n')
@@ -675,7 +669,7 @@ def writeWeatherRecord():
 
 	try:
 		print("trying database")
-    		con = mdb.connect('localhost', 'root', DATABASEPASSWORD, 'WeatherPi');
+    		con = mdb.connect(conf.DATABASEHOST, conf.DATABASEUSER, conf.DATABASEPASSWORD, conf.DATABASENAME);
 
     		cur = con.cursor()
 		print "before query"
@@ -710,7 +704,7 @@ def writePowerRecord():
 
 	try:
 		print("trying database")
-    		con = mdb.connect('localhost', 'root', DATABASEPASSWORD, 'WeatherPi');
+    		con = mdb.connect(conf.DATABASEHOST, conf.DATABASEUSER, conf.DATABASEPASSWORD, conf.DATABASENAME);
 
     		cur = con.cursor()
 		print "before query"
@@ -842,7 +836,6 @@ print ""
 print "Program Started at:"+ time.strftime("%Y-%m-%d %H:%M:%S")
 print ""
 
-DATABASEPASSWORD = "rmysqlpassword"
 pclogging.log(pclogging.INFO, __name__, "WeatherPi Startup Version 1.9")
 
 sendemail.sendEmail("test", "WeatherPi Startup \n", "The WeatherPi Raspberry Pi has rebooted.", conf.notifyAddress,  conf.fromAddress, "");
