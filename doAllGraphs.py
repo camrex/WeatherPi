@@ -4,7 +4,7 @@
 # SwitchDoc Labs March 30, 2015
 
 import sys
-sys.path.append('/home/pi/WeatherPiSolarPoweredWeather/graphs')
+sys.path.append('/home/pi/WeatherPi/graphs')
 
 
 
