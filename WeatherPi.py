@@ -171,8 +171,8 @@ def process_as3935_interrupt():
     # turn I2CBus 0 on
     #tca9545.write_control_register(TCA9545_CONFIG_BUS0)
     # turn I2CBus 2 on
-    tca9545.write_control_register(TCA9545_CONFIG_BUS2)
-    time.sleep(0.003)
+    #tca9545.write_control_register(TCA9545_CONFIG_BUS2)
+    #time.sleep(0.003)
     reason = as3935.get_interrupt()
 
     as3935LastInterrupt = reason
@@ -194,9 +194,9 @@ def process_as3935_interrupt():
 	sendemail.sendEmail("test", "WeatherPi Lightning Detected\n", as3935LastStatus, conf.textnotifyAddress,  conf.textfromAddress, "");
     
     print "Last Interrupt = 0x%x:  %s" % (as3935LastInterrupt, as3935LastStatus)
-    tca9545.write_control_register(TCA9545_CONFIG_BUS0)
+    #tca9545.write_control_register(TCA9545_CONFIG_BUS0)
 
-    time.sleep(0.003)
+    #time.sleep(0.003)
 
 
 
