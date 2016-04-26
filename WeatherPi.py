@@ -60,7 +60,7 @@ SUNAIRLEDPIN = 25
 
 ################
 # SunAirPlus Sensors
-ina3221 = SDL_Pi_INA3221.SDL_Pi_INA3221(addr=0x40, bus=3)
+ina3221 = SDL_Pi_INA3221.SDL_Pi_INA3221(twi=4, addr=0x40)
 # the three channels of the INA3221 named for SunAirPlus Solar Power Controller channels (www.switchdoc.com)
 LIPO_BATTERY_CHANNEL = 1
 SOLAR_CELL_CHANNEL   = 2
@@ -223,39 +223,39 @@ def returnPercentLeftInBattery(currentVoltage, maxVolt):
 # write SunAirPlus stats out to file
 def writeSunAirPlusStats():
     f = open("/home/pi/WeatherPi/state/SunAirPlusStats.txt", "w")
-	f.write(str(batteryVoltage) + '\n')
-	f.write(str(batteryCurrent ) + '\n')
-	f.write(str(solarVoltage) + '\n')
-	f.write(str(solarCurrent ) + '\n')
-	f.write(str(loadVoltage ) + '\n')
-	f.write(str(loadCurrent) + '\n')
-	f.write(str(batteryPower ) + '\n')
-	f.write(str(solarPower) + '\n')
-	f.write(str(loadPower) + '\n')
-	f.write(str(batteryCharge) + '\n')
+    f.write(str(batteryVoltage) + '\n')
+    f.write(str(batteryCurrent ) + '\n')
+    f.write(str(solarVoltage) + '\n')
+    f.write(str(solarCurrent ) + '\n')
+    f.write(str(loadVoltage ) + '\n')
+    f.write(str(loadCurrent) + '\n')
+    f.write(str(batteryPower ) + '\n')
+    f.write(str(solarPower) + '\n')
+    f.write(str(loadPower) + '\n')
+    f.write(str(batteryCharge) + '\n')
     f.close()
 
 # write weather stats out to file
 def writeWeatherStats():
     f = open("/home/pi/WeatherPi/state/WeatherStats.txt", "w")
-	f.write(str(totalRain) + '\n')
-	f.write(str(as3935LightningCount) + '\n')
-	f.write(str(as3935LastInterrupt) + '\n')
-	f.write(str(as3935LastDistance) + '\n')
-	f.write(str(as3935LastStatus) + '\n')
- 	f.write(str(currentWindSpeed) + '\n')
-	f.write(str(currentWindGust) + '\n')
-	f.write(str(totalRain)  + '\n')
-  	f.write(str(bmp180Temperature)  + '\n')
-	f.write(str(bmp180Pressure) + '\n')
-	f.write(str(bmp180Altitude) + '\n')
-	f.write(str(bmp180SeaLevel)  + '\n')
-	f.write(str(outsideTemperature) + '\n')
-	f.write(str(outsideHumidity) + '\n')
-	f.write(str(currentWindDirection) + '\n')
-	f.write(str(currentWindDirectionVoltage) + '\n')
-	f.write(str(HTUtemperature) + '\n')
-	f.write(str(HTUhumidity) + '\n')
+    f.write(str(totalRain) + '\n')
+    f.write(str(as3935LightningCount) + '\n')
+    f.write(str(as3935LastInterrupt) + '\n')
+    f.write(str(as3935LastDistance) + '\n')
+    f.write(str(as3935LastStatus) + '\n')
+    f.write(str(currentWindSpeed) + '\n')
+    f.write(str(currentWindGust) + '\n')
+    f.write(str(totalRain)  + '\n')
+    f.write(str(bmp180Temperature)  + '\n')
+    f.write(str(bmp180Pressure) + '\n')
+    f.write(str(bmp180Altitude) + '\n')
+    f.write(str(bmp180SeaLevel)  + '\n')
+    f.write(str(outsideTemperature) + '\n')
+    f.write(str(outsideHumidity) + '\n')
+    f.write(str(currentWindDirection) + '\n')
+    f.write(str(currentWindDirectionVoltage) + '\n')
+    f.write(str(HTUtemperature) + '\n')
+    f.write(str(HTUhumidity) + '\n')
     f.close()
 
 # sample and display
@@ -320,27 +320,27 @@ def sampleSunAirPlus():
 	print " SunAirPlus Sampling"
 	print "----------------- "
 	#
-    # blink GPIO LED when it's run
-    GPIO.setup(SUNAIRLEDPIN, GPIO.OUT)
-    GPIO.output(SUNAIRLEDPIN, True)
-    time.sleep(0.2)
-    GPIO.output(SUNAIRLEDPIN, False)
+        # blink GPIO LED when it's run
+        GPIO.setup(SUNAIRLEDPIN, GPIO.OUT)
+        GPIO.output(SUNAIRLEDPIN, True)
+        time.sleep(0.2)
+        GPIO.output(SUNAIRLEDPIN, False)
 
-    busvoltage1 = ina3221.getBusVoltage_V(LIPO_BATTERY_CHANNEL)
-    shuntvoltage1 = ina3221.getShuntVoltage_mV(LIPO_BATTERY_CHANNEL)
-    # minus is to get the "sense" right.   - means the battery is charging, + that it is discharging
-    batteryCurrent = ina3221.getCurrent_mA(LIPO_BATTERY_CHANNEL)
-    batteryVoltage = busvoltage1 + (shuntvoltage1 / 1000)
+        busvoltage1 = ina3221.getBusVoltage_V(LIPO_BATTERY_CHANNEL)
+        shuntvoltage1 = ina3221.getShuntVoltage_mV(LIPO_BATTERY_CHANNEL)
+        # minus is to get the "sense" right.   - means the battery is charging, + that it is discharging
+        batteryCurrent = ina3221.getCurrent_mA(LIPO_BATTERY_CHANNEL)
+        batteryVoltage = busvoltage1 + (shuntvoltage1 / 1000)
 	batteryPower = batteryVoltage * (batteryCurrent/1000)
-    busvoltage2 = ina3221.getBusVoltage_V(SOLAR_CELL_CHANNEL)
-    shuntvoltage2 = ina3221.getShuntVoltage_mV(SOLAR_CELL_CHANNEL)
-    solarCurrent = -ina3221.getCurrent_mA(SOLAR_CELL_CHANNEL)
-    solarVoltage = busvoltage2 + (shuntvoltage2 / 1000)
+        busvoltage2 = ina3221.getBusVoltage_V(SOLAR_CELL_CHANNEL)
+        shuntvoltage2 = ina3221.getShuntVoltage_mV(SOLAR_CELL_CHANNEL)
+        solarCurrent = -ina3221.getCurrent_mA(SOLAR_CELL_CHANNEL)
+        solarVoltage = busvoltage2 + (shuntvoltage2 / 1000)
 	solarPower = solarVoltage * (solarCurrent/1000)
-    busvoltage3 = ina3221.getBusVoltage_V(OUTPUT_CHANNEL)
-    shuntvoltage3 = ina3221.getShuntVoltage_mV(OUTPUT_CHANNEL)
-    loadCurrent = ina3221.getCurrent_mA(OUTPUT_CHANNEL)
-    loadVoltage = busvoltage3
+        busvoltage3 = ina3221.getBusVoltage_V(OUTPUT_CHANNEL)
+        shuntvoltage3 = ina3221.getShuntVoltage_mV(OUTPUT_CHANNEL)
+        loadCurrent = ina3221.getCurrent_mA(OUTPUT_CHANNEL)
+        loadVoltage = busvoltage3
 	loadPower = loadVoltage * (loadCurrent/1000)
 	batteryCharge = returnPercentLeftInBattery(batteryVoltage, 4.19)
 
@@ -415,62 +415,62 @@ def sampleAndDisplay():
 	print "----------------- "
 	print "AM2315 "
 	print "----------------- "
-    outsideTemperature, outsideHumidity, crc_check = am2315.sense()
-    print "outsideTemperature: %0.1f C" % outsideTemperature
-    print "outsideHumidity: %0.1f %%" % outsideHumidity
-    print "crc: %s" % crc_check
-    print
+	outsideTemperature, outsideHumidity, crc_check = am2315.sense()
+	print "outsideTemperature: %0.1f C" % outsideTemperature
+	print "outsideHumidity: %0.1f %%" % outsideHumidity
+	print "crc: %s" % crc_check
+	print
 
 	print "----------------- "
 	print "SunAirPlus Currents / Voltage "
 	print "----------------- "
-    shuntvoltage1 = 0
-    busvoltage1   = 0
-    current_mA1   = 0
-    loadvoltage1  = 0
-    busvoltage1 = ina3221.getBusVoltage_V(LIPO_BATTERY_CHANNEL)
-    shuntvoltage1 = ina3221.getShuntVoltage_mV(LIPO_BATTERY_CHANNEL)
-    # minus is to get the "sense" right.   - means the battery is charging, + that it is discharging
-    current_mA1 = ina3221.getCurrent_mA(LIPO_BATTERY_CHANNEL)
-    loadvoltage1 = busvoltage1  + (shuntvoltage1 / 1000)
+    	shuntvoltage1 = 0
+    	busvoltage1   = 0
+    	current_mA1   = 0
+    	loadvoltage1  = 0
+    	busvoltage1 = ina3221.getBusVoltage_V(LIPO_BATTERY_CHANNEL)
+    	shuntvoltage1 = ina3221.getShuntVoltage_mV(LIPO_BATTERY_CHANNEL)
+    	# minus is to get the "sense" right.   - means the battery is charging, + that it is discharging
+    	current_mA1 = ina3221.getCurrent_mA(LIPO_BATTERY_CHANNEL)
+    	loadvoltage1 = busvoltage1  + (shuntvoltage1 / 1000)
 	batteryPower = loadvoltage1 * (current_mA1/1000)
-    print "LIPO_Battery Bus Voltage: %3.2f V " % busvoltage1
-    print "LIPO_Battery Shunt Voltage: %3.2f mV " % shuntvoltage1
-    print "LIPO_Battery Load Voltage:  %3.2f V" % loadvoltage1
-    print "LIPO_Battery Current 1:  %3.2f mA" % current_mA1
-    print "Battery Power 1:  %3.2f W" % batteryPower
-    print
-    shuntvoltage2 = 0
-    busvoltage2 = 0
-    current_mA2 = 0
-    loadvoltage2 = 0
-    busvoltage2 = ina3221.getBusVoltage_V(SOLAR_CELL_CHANNEL)
-    shuntvoltage2 = ina3221.getShuntVoltage_mV(SOLAR_CELL_CHANNEL)
-    current_mA2 = -ina3221.getCurrent_mA(SOLAR_CELL_CHANNEL)
-    loadvoltage2 = busvoltage2  + (shuntvoltage2 / 1000)
+    	print "LIPO_Battery Bus Voltage: %3.2f V " % busvoltage1
+    	print "LIPO_Battery Shunt Voltage: %3.2f mV " % shuntvoltage1
+    	print "LIPO_Battery Load Voltage:  %3.2f V" % loadvoltage1
+    	print "LIPO_Battery Current 1:  %3.2f mA" % current_mA1
+    	print "Battery Power 1:  %3.2f W" % batteryPower
+    	print
+    	shuntvoltage2 = 0
+    	busvoltage2 = 0
+    	current_mA2 = 0
+    	loadvoltage2 = 0
+    	busvoltage2 = ina3221.getBusVoltage_V(SOLAR_CELL_CHANNEL)
+    	shuntvoltage2 = ina3221.getShuntVoltage_mV(SOLAR_CELL_CHANNEL)
+    	current_mA2 = -ina3221.getCurrent_mA(SOLAR_CELL_CHANNEL)
+    	loadvoltage2 = busvoltage2  + (shuntvoltage2 / 1000)
 	solarPower = loadvoltage2 * (current_mA2/1000)
-    print "Solar Cell Bus Voltage 2:  %3.2f V " % busvoltage2
-    print "Solar Cell Shunt Voltage 2: %3.2f mV " % shuntvoltage2
-    print "Solar Cell Load Voltage 2:  %3.2f V" % loadvoltage2
-    print "Solar Cell Current 2:  %3.2f mA" % current_mA2
-    print "Solar Cell Power 2:  %3.2f W" % solarPower
-    print
-    shuntvoltage3 = 0
-    busvoltage3 = 0
-    current_mA3 = 0
-    loadvoltage3 = 0
-    busvoltage3 = ina3221.getBusVoltage_V(OUTPUT_CHANNEL)
-    shuntvoltage3 = ina3221.getShuntVoltage_mV(OUTPUT_CHANNEL)
-    current_mA3 = ina3221.getCurrent_mA(OUTPUT_CHANNEL)
-    loadvoltage3 = busvoltage3
+    	print "Solar Cell Bus Voltage 2:  %3.2f V " % busvoltage2
+    	print "Solar Cell Shunt Voltage 2: %3.2f mV " % shuntvoltage2
+    	print "Solar Cell Load Voltage 2:  %3.2f V" % loadvoltage2
+    	print "Solar Cell Current 2:  %3.2f mA" % current_mA2
+    	print "Solar Cell Power 2:  %3.2f W" % solarPower
+    	print
+    	shuntvoltage3 = 0
+    	busvoltage3 = 0
+    	current_mA3 = 0
+    	loadvoltage3 = 0
+    	busvoltage3 = ina3221.getBusVoltage_V(OUTPUT_CHANNEL)
+    	shuntvoltage3 = ina3221.getShuntVoltage_mV(OUTPUT_CHANNEL)
+    	current_mA3 = ina3221.getCurrent_mA(OUTPUT_CHANNEL)
+    	loadvoltage3 = busvoltage3
 	loadPower = loadvoltage3 * (current_mA3/1000)
-    print "Output Bus Voltage 3:  %3.2f V " % busvoltage3
-    print "Output Shunt Voltage 3: %3.2f mV " % shuntvoltage3
-    print "Output Load Voltage 3:  %3.2f V" % loadvoltage3
-    print "Output Current 3:  %3.2f mA" % current_mA3
-    print "Output Power 3:  %3.2f W" % loadPower
-    print
-    print "------------------------------"
+    	print "Output Bus Voltage 3:  %3.2f V " % busvoltage3
+    	print "Output Shunt Voltage 3: %3.2f mV " % shuntvoltage3
+    	print "Output Load Voltage 3:  %3.2f V" % loadvoltage3
+    	print "Output Current 3:  %3.2f mA" % current_mA3
+    	print "Output Power 3:  %3.2f W" % loadPower
+    	print
+    	print "------------------------------"
 
 def writeWeatherRecord():
 	# now we have the data, stuff it in the database
@@ -487,8 +487,8 @@ def writeWeatherRecord():
 		print "Error %d: %s" % (e.args[0],e.args[1])
 		con.rollback()
 	finally:
-    	cur.close()
-    	con.close()
+	    	cur.close()
+    		con.close()
 		del cur
 		del con
 
@@ -508,7 +508,7 @@ def writePowerRecord():
 		con.rollback()
 	finally:
    		cur.close()
-    	con.close()
+    		con.close()
 		del cur
 		del con
 
@@ -519,8 +519,8 @@ def patTheDog():
     GPIO.output(SUNAIRLEDPIN, True)
     time.sleep(0.2)
     GPIO.output(SUNAIRLEDPIN, False)
-	# pat the dog
-	print "------Patting The Dog------- "
+    # pat the dog
+    print "------Patting The Dog------- "
     GPIO.setup(WATCHDOGTRIGGER, GPIO.OUT)
     GPIO.output(WATCHDOGTRIGGER, False)
     time.sleep(0.2)
