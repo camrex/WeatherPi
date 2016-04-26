@@ -25,7 +25,7 @@ import pylab
 import MySQLdb as mdb
 
 
-DATABASEPASSWORD = "rmysqlpassword"
+DATABASEPASSWORD = "M@t1ld@388"
 
 def  TemperatureHumidityGraph(source,days,delay):
 
@@ -109,7 +109,7 @@ def  TemperatureHumidityGraph(source,days,delay):
 		pyplot.setp( ax.xaxis.get_majorticklabels(), rotation=70)
 		ax.xaxis.set_major_formatter(dates.DateFormatter('%m/%d-%H'))
 		pyplot.show()
-		pyplot.savefig("/home/pi/WeatherPiRasPiConnectServer/static/TemperatureHumidityGraph.png")	
+		pyplot.savefig("/home/pi/WeatherPi/state/TemperatureHumidityGraph.png")	
 		
 	except mdb.Error, e:
   

@@ -25,7 +25,7 @@ import pylab
 
 import MySQLdb as mdb
 
-DATABASEPASSWORD = "rmysqlpassword"
+DATABASEPASSWORD = "M@t1ld@388"
 
 def  PowerVoltageGraph(source,days,delay):
 
@@ -107,7 +107,7 @@ def  PowerVoltageGraph(source,days,delay):
 		pylab.grid(True)
 
 		pyplot.show()
-		pyplot.savefig("/home/pi/WeatherPiRasPiConnectServer/static/PowerVoltageGraph.png",facecolor=fig.get_facecolor())	
+		pyplot.savefig("/home/pi/WeatherPi/state/PowerVoltageGraph.png",facecolor=fig.get_facecolor())	
 
 
 	except mdb.Error, e:

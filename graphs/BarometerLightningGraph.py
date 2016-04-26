@@ -24,7 +24,7 @@ import pylab
 
 import MySQLdb as mdb
 
-DATABASEPASSWORD = "rmysqlpassword"
+DATABASEPASSWORD = "M@t1ld@388"
 
 def  BarometerLightningGraph(source,days,delay):
 
@@ -115,7 +115,7 @@ def  BarometerLightningGraph(source,days,delay):
 		pyplot.setp( ax.xaxis.get_majorticklabels(), rotation=70)
 		ax.xaxis.set_major_formatter(dates.DateFormatter('%m/%d-%H'))
 		pyplot.show()
-		pyplot.savefig("/home/pi/WeatherPiRasPiConnectServer/static/BarometerLightningGraph.png")	
+		pyplot.savefig("/home/pi/WeatherPi/state/BarometerLightningGraph.png")	
 		
 	except mdb.Error, e:
   

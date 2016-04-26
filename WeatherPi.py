@@ -505,99 +505,77 @@ def sampleAndDisplay():
 	print "----------------- "
 	print " WeatherRack Weather Sensors Sampling" 
 	print "----------------- "
-	#
-
  	currentWindSpeed = weatherStation.current_wind_speed()/1.6
   	currentWindGust = weatherStation.get_wind_gust()/1.6
   	totalRain = totalRain + weatherStation.get_current_rain_total()/25.4
   	print("Rain Total=\t%0.2f in")%(totalRain)
   	print("Wind Speed=\t%0.2f MPH")%(currentWindSpeed)
     	print("MPH wind_gust=\t%0.2f MPH")%(currentWindGust)
-  	
 	print "Wind Direction=\t\t\t %0.2f Degrees" % weatherStation.current_wind_direction()
 	print "Wind Direction Voltage=\t\t %0.3f V" % weatherStation.current_wind_direction_voltage()
+	print
 
-	print "----------------- "
 	print "----------------- "
 	print " DS3231 Real Time Clock"
 	print "----------------- "
-	#
 	currenttime = datetime.utcnow()
-
 	deltatime = currenttime - starttime
- 
 	print "Raspberry Pi=\t" + time.strftime("%Y-%m-%d %H:%M:%S")
-	
 	print "DS3231=\t\t%s" % ds3231.read_datetime()
-
 	print "DS3231 Temperature= \t%0.2f C" % ds3231.getTemp()
+	print 
 
-	print "----------------- "
 	print "----------------- "
 	print " BMP180 Barometer/Temp/Altitude"
 	print "----------------- "
-
 	print 'Temperature = \t{0:0.2f} C'.format(bmp180.read_temperature())
 	print 'Pressure = \t{0:0.2f} KPa'.format(bmp180.read_pressure()/1000)
 	print 'Altitude = \t{0:0.2f} m'.format(bmp180.read_altitude())
 	print 'Sealevel Pressure = \t{0:0.2f} KPa'.format(bmp180.read_sealevel_pressure()/1000)
-	print "----------------- "
+	print 
 
 	print "----------------- "
 	print " HTU21DF Humidity and Temperature"
 	print "----------------- "
-
 	# We use a C library for this device as it just doesn't play well with Python and smbus/I2C libraries
-
 	HTU21DFOut = subprocess.check_output(["htu21dflib/htu21dflib","-l"])
 	splitstring = HTU21DFOut.split()
-
 	HTUtemperature = float(splitstring[0])	
 	HTUhumidity = float(splitstring[1])	
 	print "Temperature = \t%0.2f C" % HTUtemperature
 	print "Humidity = \t%0.2f %%" % HTUhumidity
-	print "----------------- "
+	print
 	
 	print "----------------- "
 	print " AS3853 Lightning Detector "
 	print "----------------- "
-
 	print "Last result from AS3953:"
-
 	if (as3935LastInterrupt == 0x00):
 		print "----No Lightning detected---"
-		
 	if (as3935LastInterrupt == 0x01):
 		print "Noise Floor: %s" % as3935LastStatus
 		as3935LastInterrupt = 0x00
-
 	if (as3935LastInterrupt == 0x04):
 		print "Disturber: %s" % as3935LastStatus
 		as3935LastInterrupt = 0x00
-
 	if (as3935LastInterrupt == 0x08):
 		print "Lightning: %s" % as3935LastStatus
 		as3935LightningCount += 1
 		as3935LastInterrupt = 0x00
-
 	print "Lightning Count = ", as3935LightningCount
-	print "----------------- "
+	print
 
 	print "----------------- "
 	print "AM2315 "
 	print "----------------- "
-	print
-	
 	# turn I2CBus 1 on
  	tca9545.write_control_register(TCA9545_CONFIG_BUS1)
-
     	outsideTemperature, outsideHumidity, crc_check = am2315.sense()
     	print "outsideTemperature: %0.1f C" % outsideTemperature
     	print "outsideHumidity: %0.1f %%" % outsideHumidity
     	print "crc: %s" % crc_check
+        print 
 
-        print "----------------- "
-        print "----------------- "
 	print "----------------- "
 	print "SunAirPlus Currents / Voltage "
 	print "----------------- "
@@ -605,59 +583,48 @@ def sampleAndDisplay():
         busvoltage1   = 0
         current_mA1   = 0
         loadvoltage1  = 0
-
-
         busvoltage1 = ina3221.getBusVoltage_V(LIPO_BATTERY_CHANNEL)
         shuntvoltage1 = ina3221.getShuntVoltage_mV(LIPO_BATTERY_CHANNEL)
         # minus is to get the "sense" right.   - means the battery is charging, + that it is discharging
         current_mA1 = ina3221.getCurrent_mA(LIPO_BATTERY_CHANNEL)
-
         loadvoltage1 = busvoltage1  + (shuntvoltage1 / 1000)   
 	batteryPower = loadvoltage1 * (current_mA1/1000)
-
         print "LIPO_Battery Bus Voltage: %3.2f V " % busvoltage1
         print "LIPO_Battery Shunt Voltage: %3.2f mV " % shuntvoltage1
         print "LIPO_Battery Load Voltage:  %3.2f V" % loadvoltage1
         print "LIPO_Battery Current 1:  %3.2f mA" % current_mA1
         print "Battery Power 1:  %3.2f W" % batteryPower
         print
-
         shuntvoltage2 = 0
         busvoltage2 = 0
         current_mA2 = 0
         loadvoltage2 = 0
-
         busvoltage2 = ina3221.getBusVoltage_V(SOLAR_CELL_CHANNEL)
         shuntvoltage2 = ina3221.getShuntVoltage_mV(SOLAR_CELL_CHANNEL)
         current_mA2 = -ina3221.getCurrent_mA(SOLAR_CELL_CHANNEL)
         loadvoltage2 = busvoltage2  + (shuntvoltage2 / 1000)
 	solarPower = loadvoltage2 * (current_mA2/1000)
-
         print "Solar Cell Bus Voltage 2:  %3.2f V " % busvoltage2
         print "Solar Cell Shunt Voltage 2: %3.2f mV " % shuntvoltage2
         print "Solar Cell Load Voltage 2:  %3.2f V" % loadvoltage2
         print "Solar Cell Current 2:  %3.2f mA" % current_mA2
         print "Solar Cell Power 2:  %3.2f W" % solarPower
         print
-
         shuntvoltage3 = 0
         busvoltage3 = 0
         current_mA3 = 0
         loadvoltage3 = 0
-
         busvoltage3 = ina3221.getBusVoltage_V(OUTPUT_CHANNEL)
         shuntvoltage3 = ina3221.getShuntVoltage_mV(OUTPUT_CHANNEL)
         current_mA3 = ina3221.getCurrent_mA(OUTPUT_CHANNEL)
         loadvoltage3 = busvoltage3 
 	loadPower = loadvoltage3 * (current_mA3/1000)
-
         print "Output Bus Voltage 3:  %3.2f V " % busvoltage3
         print "Output Shunt Voltage 3: %3.2f mV " % shuntvoltage3
         print "Output Load Voltage 3:  %3.2f V" % loadvoltage3
         print "Output Current 3:  %3.2f mA" % current_mA3
         print "Output Power 3:  %3.2f W" % loadPower
         print
-
         print "------------------------------"
 
 
