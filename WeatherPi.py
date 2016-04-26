@@ -145,7 +145,7 @@ time.sleep(0.003)
 
 as3935 = RPi_AS3935(address=0x03, bus=1)
 
-as3935.set_indoors(False)
+as3935.set_indoors(True)
 as3935.set_noise_floor(0)
 #as3935.calibrate(tun_cap=0x0F)
 as3935.calibrate(tun_cap=0x05)
@@ -157,8 +157,8 @@ as3935LastStatus = ""
 
 as3935Interrupt = False
 # turn I2CBus 0 on
-tca9545.write_control_register(TCA9545_CONFIG_BUS0)
-time.sleep(0.003)
+#tca9545.write_control_register(TCA9545_CONFIG_BUS0)
+#time.sleep(0.003)
 
 def process_as3935_interrupt():
 

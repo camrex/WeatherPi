@@ -1,4 +1,4 @@
 
 #!/bin/bash 
-cd /home/pi/WeatherPiSolarPoweredWeather 
+cd /home/pi/WeatherPi
 sudo python WeatherPi.py 
