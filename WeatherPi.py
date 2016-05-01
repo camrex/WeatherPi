@@ -389,7 +389,7 @@ def writePowerRecord():
 
 def writeWeewxInputFile():
     """Write weewx input file."""
-    f = open("/home/pi/WeatherPi/weewx/WeewxInput.txt", "w")
+    f = open("/home/pi/WeatherPi/output/WeewxInput.txt", "w")
     # f.write("barometer = \t{0:0.2f} \n" % (bmp180Pressure))
     f.write("pressure = {0:0.2f} \n" % (bmp180Pressure))
     f.write("altimeter = {0:0.2f} \n" % (bmp180Altitude))
