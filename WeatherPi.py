@@ -13,8 +13,14 @@
 #
 #
 
-# Imports
 import sys
+
+sys.path.append('./RTC_SDL_DS3231')
+sys.path.append('./SDL_Pi_Weather_80422')
+sys.path.append('./SDL_Pi_FRAM')
+sys.path.append('./SDL_Pi_INA3221')
+
+# Imports
 import time
 from datetime import datetime
 import os
@@ -36,10 +42,6 @@ from RPi_AS3935 import RPi_AS3935
 # import urllib2
 # import SDL_Pi_FRAM
 
-sys.path.append('./RTC_SDL_DS3231')
-sys.path.append('./SDL_Pi_Weather_80422')
-sys.path.append('./SDL_Pi_FRAM')
-sys.path.append('./SDL_Pi_INA3221')
 
 # Check for user imports
 try:
@@ -171,7 +173,7 @@ def returnPercentLeftInBattery(currentVoltage, maxVolt):
         return returnPercent
     return 0
 
-
+totalRain = 0
 def sampleWeather():
     """Sample weather sensors."""
     global as3935LightningCount
