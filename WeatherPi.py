@@ -42,7 +42,6 @@ from RPi_AS3935 import RPi_AS3935
 # import urllib2
 # import SDL_Pi_FRAM
 
-
 # Check for user imports
 try:
     import conflocal as conf
@@ -174,6 +173,8 @@ def returnPercentLeftInBattery(currentVoltage, maxVolt):
     return 0
 
 totalRain = 0
+
+
 def sampleWeather():
     """Sample weather sensors."""
     global as3935LightningCount
@@ -183,26 +184,27 @@ def sampleWeather():
     global outsideTemperature, outsideHumidity, crc_check
     global currentWindDirection, currentWindDirectionVoltage
     global HTUtemperature, HTUhumidity
+    global dstemp
 
     print "----------------- "
     print " Weather Sampling"
     print "----------------- "
 
-    currentWindSpeed = weatherStation.current_wind_speed()/1.6
-    currentWindGust = weatherStation.get_wind_gust()/1.6
-    totalRain = totalRain + weatherStation.get_current_rain_total()/25.4
+    currentWindSpeed = weatherStation.current_wind_speed() / 1.6
+    currentWindGust = weatherStation.get_wind_gust() / 1.6
+    totalRain = totalRain + weatherStation.get_current_rain_total() / 25.4
     currentWindDirection = weatherStation.current_wind_direction()
     currentWindDirectionVoltage = weatherStation.current_wind_direction_voltage()
 
-    bmp180Temperature = bmp180.read_temperature()
-    bmp180Pressure = bmp180.read_pressure()/1000
-    bmp180Altitude = bmp180.read_altitude()
-    bmp180SeaLevel = bmp180.read_sealevel_pressure()/1000
+    bmp180Temperature = bmp180.read_temperature() * 1.8 + 32
+    bmp180Pressure = bmp180.read_pressure() / 1000 * 0.295301
+    bmp180Altitude = bmp180.read_altitude() * 3.280839895
+    bmp180SeaLevel = bmp180.read_sealevel_pressure() / 1000 * 0.295301
 
     # We use a C library for this device as it just doesn't play well with Python and smbus/I2C libraries
     HTU21DFOut = subprocess.check_output(["htu21dflib/htu21dflib", "-l"])
     splitstring = HTU21DFOut.split()
-    HTUtemperature = float(splitstring[0])
+    HTUtemperature = float(splitstring[0]) * 1.8 + 32
     HTUhumidity = float(splitstring[1])
 
     if (as3935LastInterrupt == 0x00):
@@ -220,7 +222,10 @@ def sampleWeather():
 
     # get AM2315 Outside Humidity and Outside Temperature
     outsideTemperature, outsideHumidity, crc_check = am2315.sense()
+    outsideTemperature = outsideTemperature * 1.8 + 32
 
+    # get DS3231 temperature
+    dstemp = ds3231.getTemp() * 1.8 + 32
 
 def sampleSunAirPlus():
     """Sample SunAirPlus."""
@@ -232,7 +237,7 @@ def sampleSunAirPlus():
     print "----------------- "
     busvoltage1 = ina3221.getBusVoltage_V(LIPO_BATTERY_CHANNEL)
     shuntvoltage1 = ina3221.getShuntVoltage_mV(LIPO_BATTERY_CHANNEL)
-    # minus is to get the "sense" right.   - means the battery is charging, + that it is discharging
+    # - means the battery is charging, + that it is discharging
     batteryCurrent = ina3221.getCurrent_mA(LIPO_BATTERY_CHANNEL)
     batteryVoltage = busvoltage1 + (shuntvoltage1 / 1000)
     batteryPower = batteryVoltage * (batteryCurrent / 1000)
@@ -244,58 +249,45 @@ def sampleSunAirPlus():
     busvoltage3 = ina3221.getBusVoltage_V(OUTPUT_CHANNEL)
     shuntvoltage3 = ina3221.getShuntVoltage_mV(OUTPUT_CHANNEL)
     loadCurrent = ina3221.getCurrent_mA(OUTPUT_CHANNEL)
-    loadVoltage = busvoltage3
+    loadVoltage = busvoltage3 + (shuntvoltage3 / 1000)
     loadPower = loadVoltage * (loadCurrent / 1000)
     batteryCharge = returnPercentLeftInBattery(batteryVoltage, 4.19)
 
 
-def sampleAndDisplay():
-    """Sample and Display values."""
-    global totalRain, as3935LightningCount
-    global as3935, as3935LastInterrupt, as3935LastDistance, as3935LastStatus
-
+def display():
+    """Display values."""
     print "----------------- "
     print " WeatherRack Weather Sensors Sampling"
     print "----------------- "
-    currentWindSpeed = weatherStation.current_wind_speed() / 1.6
-    currentWindGust = weatherStation.get_wind_gust() / 1.6
-    totalRain = totalRain + weatherStation.get_current_rain_total() / 25.4
-    print("Rain Total=\t%0.2f in") % (totalRain)
-    print("Wind Speed=\t%0.2f MPH") % (currentWindSpeed)
-    print("MPH wind_gust=\t%0.2f MPH") % (currentWindGust)
-    print "Wind Direction=\t\t\t %0.2f Degrees" % weatherStation.current_wind_direction()
-    print "Wind Direction Voltage=\t\t %0.3f V" % weatherStation.current_wind_direction_voltage()
+    print "Rain Total=\t%0.2f in" % (totalRain)
+    print "Wind Speed=\t%0.2f MPH" % (currentWindSpeed)
+    print "MPH wind_gust=\t%0.2f MPH" % (currentWindGust)
+    print "Wind Direction=\t\t\t %0.2f Degrees" % (currentWindDirection)
+    print "Wind Direction Voltage=\t\t %0.3f V" % (currentWindDirectionVoltage)
     print
 
     print "----------------- "
     print " DS3231 Real Time Clock"
     print "----------------- "
-    # currenttime = datetime.utcnow()
-    # deltatime = currenttime - starttime
     print "Raspberry Pi=\t" + time.strftime("%Y-%m-%d %H:%M:%S")
     print "DS3231=\t\t%s" % ds3231.read_datetime()
-    print "DS3231 Temperature= \t%0.2f C" % ds3231.getTemp()
+    print "DS3231 Temperature= \t%0.2f F" % ds3231.getTemp() * 1.8 + 32
     print
 
     print "----------------- "
     print " BMP180 Barometer/Temp/Altitude"
     print "----------------- "
-    print 'Temperature = \t{0:0.2f} C'.format(bmp180.read_temperature())
-    print 'Pressure = \t{0:0.2f} KPa'.format(bmp180.read_pressure() / 1000)
-    print 'Altitude = \t{0:0.2f} m'.format(bmp180.read_altitude())
-    print 'Sealevel Pressure = \t{0:0.2f} KPa'.format(bmp180.read_sealevel_pressure() / 1000)
+    print "Temperature = \t{0:0.2f} F" % (bmp180Temperature)
+    print "Pressure = \t{0:0.2f} inHg" % (bmp180Pressure)
+    print "Altitude = \t{0:0.2f} ft" % (bmp180Altitude)
+    print "Sealevel Pressure = \t{0:0.2f} inHg" % (bmp180SeaLevel)
     print
 
     print "----------------- "
     print " HTU21DF Humidity and Temperature"
     print "----------------- "
-    # We use a C library for this device as it just doesn't play well with Python and smbus/I2C libraries
-    HTU21DFOut = subprocess.check_output(["htu21dflib/htu21dflib", "-l"])
-    splitstring = HTU21DFOut.split()
-    HTUtemperature = float(splitstring[0])
-    HTUhumidity = float(splitstring[1])
-    print "Temperature = \t%0.2f C" % HTUtemperature
-    print "Humidity = \t%0.2f %%" % HTUhumidity
+    print "Temperature = \t%0.2f F" % (HTUtemperature)
+    print "Humidity = \t%0.2f %%" % (HTUhumidity)
     print
 
     print "----------------- "
@@ -320,8 +312,7 @@ def sampleAndDisplay():
     print "----------------- "
     print "AM2315 "
     print "----------------- "
-    outsideTemperature, outsideHumidity, crc_check = am2315.sense()
-    print "outsideTemperature: %0.1f C" % outsideTemperature
+    print "outsideTemperature: %0.1f F" % outsideTemperature
     print "outsideHumidity: %0.1f %%" % outsideHumidity
     print "crc: %s" % crc_check
     print
@@ -329,46 +320,18 @@ def sampleAndDisplay():
     print "----------------- "
     print "SunAirPlus Currents / Voltage "
     print "----------------- "
-    shuntvoltage1 = 0
-    busvoltage1 = 0
-    current_mA1 = 0
-    loadvoltage1 = 0
-    busvoltage1 = ina3221.getBusVoltage_V(LIPO_BATTERY_CHANNEL)
-    shuntvoltage1 = ina3221.getShuntVoltage_mV(LIPO_BATTERY_CHANNEL)
-    # minus is to get the "sense" right.   - means the battery is charging, + that it is discharging
-    current_mA1 = ina3221.getCurrent_mA(LIPO_BATTERY_CHANNEL)
-    loadvoltage1 = busvoltage1 + (shuntvoltage1 / 1000)
-    batteryPower = loadvoltage1 * (current_mA1 / 1000)
     print "LIPO_Battery Bus Voltage: %3.2f V " % busvoltage1
     print "LIPO_Battery Shunt Voltage: %3.2f mV " % shuntvoltage1
     print "LIPO_Battery Load Voltage:  %3.2f V" % loadvoltage1
     print "LIPO_Battery Current 1:  %3.2f mA" % current_mA1
     print "Battery Power 1:  %3.2f W" % batteryPower
     print
-    shuntvoltage2 = 0
-    busvoltage2 = 0
-    current_mA2 = 0
-    loadvoltage2 = 0
-    busvoltage2 = ina3221.getBusVoltage_V(SOLAR_CELL_CHANNEL)
-    shuntvoltage2 = ina3221.getShuntVoltage_mV(SOLAR_CELL_CHANNEL)
-    current_mA2 = -ina3221.getCurrent_mA(SOLAR_CELL_CHANNEL)
-    loadvoltage2 = busvoltage2 + (shuntvoltage2 / 1000)
-    solarPower = loadvoltage2 * (current_mA2 / 1000)
     print "Solar Cell Bus Voltage 2:  %3.2f V " % busvoltage2
     print "Solar Cell Shunt Voltage 2: %3.2f mV " % shuntvoltage2
     print "Solar Cell Load Voltage 2:  %3.2f V" % loadvoltage2
     print "Solar Cell Current 2:  %3.2f mA" % current_mA2
     print "Solar Cell Power 2:  %3.2f W" % solarPower
     print
-    shuntvoltage3 = 0
-    busvoltage3 = 0
-    current_mA3 = 0
-    loadvoltage3 = 0
-    busvoltage3 = ina3221.getBusVoltage_V(OUTPUT_CHANNEL)
-    shuntvoltage3 = ina3221.getShuntVoltage_mV(OUTPUT_CHANNEL)
-    current_mA3 = ina3221.getCurrent_mA(OUTPUT_CHANNEL)
-    loadvoltage3 = busvoltage3
-    loadPower = loadvoltage3 * (current_mA3 / 1000)
     print "Output Bus Voltage 3:  %3.2f V " % busvoltage3
     print "Output Shunt Voltage 3: %3.2f mV " % shuntvoltage3
     print "Output Load Voltage 3:  %3.2f V" % loadvoltage3
@@ -381,10 +344,10 @@ def sampleAndDisplay():
 def writeWeatherRecord():
     """Write weather sensor data to database."""
     try:
-        print("trying database")
+        print("Connecting to Database")
         con = mdb.connect(conf.DATABASEHOST, conf.DATABASEUSER, conf.DATABASEPASSWORD, conf.DATABASENAME)
         cur = con.cursor()
-        print "before query"
+        print "------Writing Weather Data------"
         query = 'INSERT INTO WeatherData(TimeStamp,as3935LightningCount, as3935LastInterrupt, as3935LastDistance, as3935LastStatus, currentWindSpeed, currentWindGust, totalRain,  bmp180Temperature, bmp180Pressure, bmp180Altitude,  bmp180SeaLevel,  outsideTemperature, outsideHumidity, currentWindDirection, currentWindDirectionVoltage, insideTemperature, insideHumidity) VALUES(UTC_TIMESTAMP(), %.3f, %.3f, %.3f, "%s", %.3f, %.3f, %.3f, %i, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f)' % (as3935LightningCount, as3935LastInterrupt, as3935LastDistance, as3935LastStatus, currentWindSpeed, currentWindGust, totalRain,  bmp180Temperature, bmp180Pressure, bmp180Altitude,  bmp180SeaLevel,  outsideTemperature, outsideHumidity, currentWindDirection, currentWindDirectionVoltage, HTUtemperature, HTUhumidity)
         print("query=%s" % query)
         cur.execute(query)
@@ -402,10 +365,10 @@ def writeWeatherRecord():
 def writePowerRecord():
     """Write power data to database."""
     try:
-        print("trying database")
+        print("Connecting to Database")
         con = mdb.connect(conf.DATABASEHOST, conf.DATABASEUSER, conf.DATABASEPASSWORD, conf.DATABASENAME)
         cur = con.cursor()
-        print "before query"
+        print "------Writing Power Data------"
         query = 'INSERT INTO PowerSystem(TimeStamp, batteryVoltage, batteryCurrent, solarVoltage, solarCurrent, loadVoltage, loadCurrent, batteryPower, solarPower, loadPower, batteryCharge) VALUES (UTC_TIMESTAMP (), %.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f)' % (batteryVoltage, batteryCurrent, solarVoltage, solarCurrent, loadVoltage, loadCurrent, batteryPower, solarPower, loadPower, batteryCharge)
         print("query=%s" % query)
         cur.execute(query)
@@ -418,6 +381,61 @@ def writePowerRecord():
         con.close()
         del cur
         del con
+
+
+def writeWeewxInputFile():
+    """Write weewx input file."""
+    f = open("/home/pi/WeatherPi/weewx/WeewxInput.txt", "w")
+    # f.write("barometer = \t{0:0.2f} \n" % (bmp180Pressure))
+    f.write("pressure = {0:0.2f} \n" % (bmp180Pressure))
+    f.write("altimeter = {0:0.2f} \n" % (bmp180Altitude))
+    f.write("inTemp = {0:0.2f} \n" % (bmp180Temperature))
+    f.write("outTemp = {0:0.2f} \n" % (bmp180Temperature))
+    f.write("inHumidity = %0.2f \n" % (HTUhumidity))
+    f.write("outHumidity = %0.1f \n" % outsideHumidity)
+    f.write("windSpeed = %0.2f \n" % (currentWindSpeed))
+    f.write("windDir = %0.2f \n" % (currentWindDirection))
+    f.write("windGust = %0.2f \n" % (currentWindGust))
+    # f.write("windGustDir = ")
+    # f.write("rainRate = ")
+    f.write("rain = %0.2f \n" % (totalRain))
+    # f.write("dewpoint = ")
+    # f.write("windchill = ")
+    # f.write("headindex = ")
+    # f.write("ET = ")
+    # f.write("radiation = ")
+    # f.write("UV = ")
+    f.write("extraTemp1 = %0.2f \n" % (HTUtemperature))
+    f.write("extraTemp2 = %0.2f \n" % (dstemp))
+    # f.write("extraTemp3 = ")
+    # f.write("soilTemp1 = ")
+    # f.write("soilTemp2 = ")
+    # f.write("soilTemp3 = ")
+    # f.write("soilTemp4 = ")
+    # f.write("leafTemp1 = ")
+    # f.write("leafTemp2 = ")
+    # f.write("extraHumid1 = ")
+    # f.write("extraHumid2 = ")
+    # f.write("soilMoist1 = ")
+    # f.write("soilMoist2 = ")
+    # f.write("soilMoist3 = ")
+    # f.write("soilMoist4 = ")
+    # f.write("leafWet1 = ")
+    # f.write("leafWet2 = ")
+    f.write("rxCheckPercent = ")
+    f.write("txBatteryStatus = ")
+    f.write("consBatteryVoltage = ")
+    # f.write("hail = ")
+    # f.write("hailRate = ")
+    # f.write("heatingTemp = ")
+    # f.write("heatingVoltage = ")
+    f.write("supplyVoltage = ")
+    f.write("referenceVoltage = ")
+    # f.write("windBatteryStatus = ")
+    # f.write("rainBatteryStatus = ")
+    # f.write("outTempBatteryStatus = ")
+    # f.write("inTempBatteryStatus = ")
+    f.close()
 
 
 def patTheDog():
@@ -497,6 +515,7 @@ while True:
         sampleSunAirPlus()
         writeWeatherRecord()
         writePowerRecord()
+        display()
         patTheDog()      # reset the WatchDog Timer
 
     # every 5 minutes (300 seconds), push data to mysql and check for shutdown
