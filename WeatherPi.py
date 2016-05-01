@@ -19,6 +19,7 @@ sys.path.append('./RTC_SDL_DS3231')
 sys.path.append('./SDL_Pi_Weather_80422')
 sys.path.append('./SDL_Pi_FRAM')
 sys.path.append('./SDL_Pi_INA3221')
+sys.path.append('./UnitConv')
 
 # Imports
 import time
@@ -35,6 +36,8 @@ import SDL_DS3231
 import Adafruit_BMP.BMP085 as BMP180
 import SDL_Pi_Weather_80422 as SDL_Pi_Weather_80422
 from RPi_AS3935 import RPi_AS3935
+import conv_temp
+import conv_pressure
 # import random
 # import re
 # import math
@@ -196,15 +199,16 @@ def sampleWeather():
     currentWindDirection = weatherStation.current_wind_direction()
     currentWindDirectionVoltage = weatherStation.current_wind_direction_voltage()
 
-    bmp180Temperature = bmp180.read_temperature() * 1.8 + 32
-    bmp180Pressure = bmp180.read_pressure() / 1000 * 0.295301
+    bmp180Temperature = bmp180.read_temperature()
+    bmp180Temperature = conv_temp.celsius_to_fahrenheit(bmp180.read_temperature())
+    bmp180Pressure = conv_pressure.hpa_to_inches(bmp180.read_pressure() / 100)
     bmp180Altitude = bmp180.read_altitude() * 3.280839895
-    bmp180SeaLevel = bmp180.read_sealevel_pressure() / 1000 * 0.295301
+    bmp180SeaLevel = conv_pressure.hpa_to_inches(bmp180.read_sealevel_pressure() / 100)
 
     # We use a C library for this device as it just doesn't play well with Python and smbus/I2C libraries
     HTU21DFOut = subprocess.check_output(["htu21dflib/htu21dflib", "-l"])
     splitstring = HTU21DFOut.split()
-    HTUtemperature = float(splitstring[0]) * 1.8 + 32
+    HTUtemperature = conv_temp.celsius_to_fahrenheit(float(splitstring[0]))
     HTUhumidity = float(splitstring[1])
 
     if (as3935LastInterrupt == 0x00):
@@ -222,10 +226,10 @@ def sampleWeather():
 
     # get AM2315 Outside Humidity and Outside Temperature
     outsideTemperature, outsideHumidity, crc_check = am2315.sense()
-    outsideTemperature = outsideTemperature * 1.8 + 32
+    outsideTemperature = conv_temp.celsius_to_fahrenheit(outsideTemperature)
 
     # get DS3231 temperature
-    dstemp = ds3231.getTemp() * 1.8 + 32
+    dstemp = conv_temp.celsius_to_fahrenheit(ds3231.getTemp())
 
 def sampleSunAirPlus():
     """Sample SunAirPlus."""
@@ -422,15 +426,15 @@ def writeWeewxInputFile():
     # f.write("soilMoist4 = ")
     # f.write("leafWet1 = ")
     # f.write("leafWet2 = ")
-    f.write("rxCheckPercent = ")
-    f.write("txBatteryStatus = ")
-    f.write("consBatteryVoltage = ")
+    # f.write("rxCheckPercent = ")
+    # f.write("txBatteryStatus = ")
+    # f.write("consBatteryVoltage = ")
     # f.write("hail = ")
     # f.write("hailRate = ")
     # f.write("heatingTemp = ")
     # f.write("heatingVoltage = ")
-    f.write("supplyVoltage = ")
-    f.write("referenceVoltage = ")
+    # f.write("supplyVoltage = ")
+    # f.write("referenceVoltage = ")
     # f.write("windBatteryStatus = ")
     # f.write("rainBatteryStatus = ")
     # f.write("outTempBatteryStatus = ")
@@ -510,12 +514,12 @@ while True:
 
     # print every 10 seconds
     if ((secondCount % 10) == 0):
-        # sampleAndDisplay()
         sampleWeather()
         sampleSunAirPlus()
         writeWeatherRecord()
         writePowerRecord()
-        display()
+        writeWeewxInputFile()
+        # display()
         patTheDog()      # reset the WatchDog Timer
 
     # every 5 minutes (300 seconds), push data to mysql and check for shutdown
