@@ -175,8 +175,6 @@ def returnPercentLeftInBattery(currentVoltage, maxVolt):
         return returnPercent
     return 0
 
-totalRain = 0
-
 
 def sampleWeather():
     """Sample weather sensors."""
@@ -195,7 +193,8 @@ def sampleWeather():
 
     currentWindSpeed = weatherStation.current_wind_speed() / 1.6
     currentWindGust = weatherStation.get_wind_gust() / 1.6
-    totalRain = totalRain + weatherStation.get_current_rain_total() / 25.4
+    totalRain = 0
+    totalRain = weatherStation.get_current_rain_total() / 25.4
     currentWindDirection = weatherStation.current_wind_direction()
     currentWindDirectionVoltage = weatherStation.current_wind_direction_voltage()
 
@@ -347,6 +346,8 @@ def display():
 
 def writeWeatherRecord():
     """Write weather sensor data to database."""
+    con = None
+    cur = None
     try:
         print("Connecting to Database")
         con = mdb.connect(conf.DATABASEHOST, conf.DATABASEUSER, conf.DATABASEPASSWORD, conf.DATABASENAME)
@@ -358,16 +359,21 @@ def writeWeatherRecord():
         con.commit()
     except mdb.Error, e:
         print "Error %d: %s" % (e.args[0], e.args[1])
-        con.rollback()
+        if con is not None:
+            con.rollback()
     finally:
-        cur.close()
-        con.close()
+        if cur is not None:
+            cur.close()
+        if con is not None:
+            con.close()
         del cur
         del con
 
 
 def writePowerRecord():
     """Write power data to database."""
+    con = None
+    cur = None
     try:
         print("Connecting to Database")
         con = mdb.connect(conf.DATABASEHOST, conf.DATABASEUSER, conf.DATABASEPASSWORD, conf.DATABASENAME)
@@ -379,22 +385,25 @@ def writePowerRecord():
         con.commit()
     except mdb.Error, e:
         print "Error %d: %s" % (e.args[0], e.args[1])
-        con.rollback()
+        if con is not None:
+            con.rollback()
     finally:
-        cur.close()
-        con.close()
+        if cur is not None:
+            cur.close()
+        if con is not None:    
+            con.close()
         del cur
         del con
 
 
 def writeWeewxInputFile():
     """Write weewx input file."""
-    f = open("/home/pi/WeatherPi/output/WeewxInput.txt", "w")
+    f = open("/home/pi/WeatherPi/output/wxdata", "w")
     # f.write("barometer = \t{0:0.2f} \n" % (bmp180Pressure))
-    f.write("pressure = {0:0.2f} \n" % (bmp180Pressure))
-    f.write("altimeter = {0:0.2f} \n" % (bmp180Altitude))
-    f.write("inTemp = {0:0.2f} \n" % (bmp180Temperature))
-    f.write("outTemp = {0:0.2f} \n" % (bmp180Temperature))
+    f.write("pressure = %0.2f \n" % (bmp180Pressure))
+    f.write("altimeter = %0.2f \n" % (bmp180Altitude))
+    f.write("inTemp = %0.2f \n" % (bmp180Temperature))
+    f.write("outTemp = %0.2f \n" % (outsideTemperature))
     f.write("inHumidity = %0.2f \n" % (HTUhumidity))
     f.write("outHumidity = %0.1f \n" % outsideHumidity)
     f.write("windSpeed = %0.2f \n" % (currentWindSpeed))
