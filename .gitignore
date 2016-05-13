@@ -8,3 +8,4 @@ nohup.out
 .*DS_Store
 conflocal.py
 *.png
+output/
