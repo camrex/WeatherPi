@@ -38,11 +38,6 @@ import SDL_Pi_Weather_80422 as SDL_Pi_Weather_80422
 from RPi_AS3935 import RPi_AS3935
 import conv_temp
 import conv_pressure
-# import random
-# import re
-# import math
-# import doAllGraphs
-# import urllib2
 # import SDL_Pi_FRAM
 
 # Check for user imports
@@ -390,7 +385,7 @@ def writePowerRecord():
     finally:
         if cur is not None:
             cur.close()
-        if con is not None:    
+        if con is not None:
             con.close()
         del cur
         del con
